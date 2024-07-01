@@ -1,56 +1,58 @@
 import requests
 from bs4 import BeautifulSoup
+from colorama import Fore, Style, init
 
-def check_instagram_account(username):
+init(autoreset=True)
+
+def check_instagram_username_status(username):
     url = f"https://www.instagram.com/{username}/"
     response = requests.get(url)
     
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        if soup.find('meta', property="og:description"):
-            return "active"
+        if soup.find('meta', property='og:description'):
+            return 'active'
         else:
-            return "suspended"
+            return 'suspended'
     elif response.status_code == 404:
-        return "suspended"
+        return 'suspended'
     else:
-        return "error"
+        return 'unknown'
 
-def check_accounts_from_file(filename):
-    with open(filename, 'r') as file:
+def main():
+    with open('username.txt', 'r') as file:
         usernames = [line.strip() for line in file]
 
     active_users = []
     suspended_users = []
 
     for username in usernames:
-        status = check_instagram_account(username)
-        if status == "active":
+        status = check_instagram_username_status(username)
+        if status == 'active':
             active_users.append(username)
-        elif status == "suspended":
+        elif status == 'suspended':
             suspended_users.append(username)
         else:
-            print(f"Error checking account: {username}")
+            print(f"Could not determine the status of username: {username}")
 
-    return active_users, suspended_users
+    print(f"{Fore.GREEN}ACTIVE USERS =")
+    for username in active_users:
+        print(f"{Fore.GREEN}{username}")
+
+    print(f"\n{Fore.RED}SUSPENDED USERS =")
+    for username in suspended_users:
+        print(f"{Fore.RED}{username}")
+
+
+    print("\n©️𝑻𝑯𝑰𝑺 𝑪𝑶𝑫𝑬 𝑴𝑨𝑲𝑬𝑫 𝑩𝒀 @𝑳𝒐𝒕𝒎𝒂𝒙𝑫𝒆𝒗")
+
+    with open('active.txt', 'w') as file:
+        for username in active_users:
+            file.write(username + '\n')
+
+    with open('suspend.txt', 'w') as file:
+        for username in suspended_users:
+            file.write(username + '\n')
 
 if __name__ == "__main__":
-    filename = input("Enter the filename containing Instagram usernames: ")
-    active_users, suspended_users = check_accounts_from_file(filename)
-
-    print("\nActive Users:")
-    for user in active_users:
-        print(user)
-
-    print("\nSuspended Users:")
-    for user in suspended_users:
-        print(user)
-
-    # Optionally, save results to files
-    with open('active_users.txt', 'w') as file:
-        for user in active_users:
-            file.write(f"{user}\n")
-
-    with open('suspended_users.txt', 'w') as file:
-        for user in suspended_users:
-            file.write(f"{user}\n")
+    main()
